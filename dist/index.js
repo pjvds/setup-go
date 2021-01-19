@@ -5144,15 +5144,26 @@ function findMatch(versionSpec, stable) {
         for (let i = 0; i < candidates.length; i++) {
             let candidate = candidates[i];
             let version = makeSemver(candidate.version);
-            // 1.13.0 is advertised as 1.13 preventing being able to match exactly 1.13.0
-            // since a semver of 1.13 would match latest 1.13
-            let parts = version.split('.');
-            if (parts.length == 2) {
-                version = version + '.0';
-            }
-            core.debug(`check ${version} satisfies ${versionSpec}`);
-            if (semver.satisfies(version, versionSpec) &&
-                (!stable || candidate.stable === stable)) {
+
+						if(verions !== versionSpec) {
+							// 1.13.0 is advertised as 1.13 preventing being able to match exactly 1.13.0
+							// since a semver of 1.13 would match latest 1.13
+							let parts = version.split('.');
+							if (parts.length == 2) {
+									version = version + '.0';
+							}
+
+							let satisfied = semver.satisfies(version, versionSpec);
+
+							if(!satisfied) {
+								core.debug(`${version} doesn't satisfy ${versionSpec}`);
+								continue;
+							}
+						}
+
+    				core.debug(`${version} does satisfy ${versionSpec}`);
+
+            if (!stable || candidate.stable === stable) {
                 goFile = candidate.files.find(file => {
                     core.debug(`${file.arch}===${archFilter} && ${file.os}===${platFilter}`);
                     return file.arch === archFilter && file.os === platFilter;
@@ -5161,7 +5172,9 @@ function findMatch(versionSpec, stable) {
                     core.debug(`matched ${candidate.version}`);
                     match = candidate;
                     break;
-                }
+                } else {
+									 core.debug(`version statisfied ${candidateversion}, but coulnd't find supported platform and/or architecture`);
+								}
             }
         }
         if (match && goFile) {
