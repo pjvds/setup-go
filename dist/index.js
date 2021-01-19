@@ -5161,7 +5161,9 @@ function findMatch(versionSpec, stable) {
                     core.debug(`matched ${candidate.version}`);
                     match = candidate;
                     break;
-                }
+                } else {
+									 core.debug(`version statisfied ${candidateversion}, but coulnd't find supported platform and/or architecture`);
+								}
             }
         }
         if (match && goFile) {
