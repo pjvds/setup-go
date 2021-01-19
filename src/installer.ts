@@ -210,11 +210,17 @@ export async function findMatch(
       version = version + '.0';
     }
 
-    core.debug(`check ${version} satisfies ${versionSpec}`);
-    if (
-      semver.satisfies(version, versionSpec) &&
-      (!stable || candidate.stable === stable)
-    ) {
+		let satisfied = semver.satisfies(version, versionSpec);
+
+		if(!satisfied) {
+    	core.debug(`${version} doesn't satisfy ${versionSpec}`);
+			continue;
+		}
+
+    core.debug(`${version} does satisfy ${versionSpec}`);
+
+    if (!stable || candidate.stable === stable)
+    {
       goFile = candidate.files.find(file => {
         core.debug(
           `${file.arch}===${archFilter} && ${file.os}===${platFilter}`
